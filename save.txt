@@ -1,0 +1,9 @@
+Stage: 1
+Money: 68
+Max_HP: 5.0
+HP: 5.0
+Speed: 270
+Damage: 1.0
+Attack_Speed: 1.0
+Range: 150
+Weapons: 1

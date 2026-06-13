@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>672e2a9c-89b0-46ad-ba48-09112ccddfa3</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>projectPython.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,7 +22,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="projectPython.py" />
+    <Compile Include="game.py" />
+    <Compile Include="logic.py" />
+    <Compile Include="rendering.py" />
+    <Compile Include="settings.py" />
+    <Compile Include="entities.py" />
+    <Compile Include="main.py" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="game\">
