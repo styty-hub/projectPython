@@ -1,8 +1,7 @@
 
 """
-Moduł logic.py
-Odpowiada za całą mechanikę gry, przetwarzanie zdarzeń (input), ruch, 
-spawnowanie przeciwników oraz detekcję kolizji.
+logic.py
+Moduł zawierajacy mechanike gry, ruch, spawn przeciwników i wykrywanie kolizjii
 """
 
 import pygame
@@ -14,10 +13,11 @@ from entities import Player, Enemy, Item
 
 def handle_events(game):
     """
-    Przetwarza zdarzenia wejściowe z kolejki Pygame (mysz, klawiatura, zmiana rozmiaru okna).
+    Przetwarzanie danych z glownej klasy gry.
 
-    :param game: Instancja głównej aplikacji przechowująca stan gry.
+    :param game: obiekt gry
     """
+    # petla eventow
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game.running = False
@@ -26,8 +26,9 @@ def handle_events(game):
             game.width, game.height = event.w, event.h
             game.screen = pygame.display.set_mode((game.width, game.height), pygame.RESIZABLE)
             
+        # myszka
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if game.state == "MAIN_MENU":
+            if game.state   == "MAIN_MENU":
                 if game.btn_menu_rect.collidepoint(event.pos):
                     game.player = Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2) 
                     game.stage = 1
@@ -40,6 +41,7 @@ def handle_events(game):
                     game.wave2_spawned = False
                     game.state = "PLAYING"
                 
+                # ladowanie z pliku
                 elif game.btn_load_rect.collidepoint(event.pos):
                     if os.path.exists("save.txt") and os.path.getsize("save.txt") > 0:
                         try:
@@ -70,11 +72,11 @@ def handle_events(game):
                                 game.wave1_spawned = False
                                 game.wave2_spawned = False
                         except Exception as e:
-                            print("Błąd podczas ładowania gry:", e)
+                            print("blad podczas ladowania:", e)
 
             elif game.state == "SHOP":
                 if game.btn_stage_clear.collidepoint(event.pos):
-                    hp_bonus = 0.5 + (game.stage - 1) * 1.0
+                    hp_bonus = 1.0 + (game.stage - 1) * 0.5
                     game.player.max_hp += hp_bonus
                     game.player.hp = game.player.max_hp
                     
@@ -105,37 +107,37 @@ def handle_events(game):
                             f.write(save_data)
                         game.save_message_timer = 2.0 
                     except Exception as e:
-                        print("Błąd podczas zapisywania gry:", e)
+                        print("blad przy zapisie:", e)
                         
                 elif game.btn_shop_menu.collidepoint(event.pos):
                     game.state = "MAIN_MENU"
                 
                 else:
-                    base_prices = [50, 60, 80, 80, 100, 150]
+                    base_prices = [35, 45, 65, 65, 85, 135]
                     prices = [base_price + (game.stage - 1) * 10 for base_price in base_prices]
                     
                     for i, rect in enumerate(game.shop_rects):
                         if rect.collidepoint(event.pos):
                             price = prices[i]
                             if game.player.money >= price:
-                                if i == 0:                            # Max HP
+                                if i == 0:                            # hp
                                     game.player.max_hp += 1
                                     game.player.hp += 1
                                     game.player.money -= price
-                                elif i == 1 and game.player.speed < 400:   # Speed
+                                elif i == 1 and game.player.speed < 400:   # speed
                                     game.player.speed += 10
                                     game.player.money -= price
                                     game.enemy_speed_bonus += 6.0
-                                elif i == 2:                          # Damage
+                                elif i == 2:                          # damage
                                     game.player.damage += 0.5
                                     game.player.money -= price
-                                elif i == 3:                          # Atk Speed
+                                elif i == 3:                          # atk
                                     game.player.attack_speed += 0.2
                                     game.player.money -= price
-                                elif i == 4:                          # Range
+                                elif i == 4:                          # range
                                     game.player.range += 15
                                     game.player.money -= price
-                                elif i == 5 and game.player.weapons < 3:   # Weapon
+                                elif i == 5 and game.player.weapons < 3:   # weapon
                                     game.player.weapons += 1
                                     game.player.money -= price
             
@@ -182,12 +184,13 @@ def handle_events(game):
                                     game.wave1_spawned = False
                                     game.wave2_spawned = False
                         except Exception as e:
-                            print("Błąd podczas ładowania gry:", e)
+                            print("blad przy ladowaniu:", e)
 
             elif game.state == "PAUSED":
                 if game.btn_return_menu_rect.collidepoint(event.pos):
                     game.state = "MAIN_MENU"
                 
+        # klawiatura
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 if game.state == "PLAYING":
@@ -197,16 +200,16 @@ def handle_events(game):
 
 def update_logic(game, dt):
     """
-    Aktualizuje stany czasowe, pozycje obiektów, walkę i zachowania przeciwników w trybie aktywnym.
-
-    :param game: Instancja głównej aplikacji przechowująca stan gry.
-    :param dt: Czas delta od poprzedniej klatki (float).
+    Aktualizacja pozycji, walki i przeciwnikow
+    
+    :param game: obiekt gry
+    :param dt: delta time
     """
     if game.save_message_timer > 0:
         game.save_message_timer -= dt
 
     if game.state == "PLAYING":
-        # 1. Obsługa Timera
+        # stage timer
         game.stage_timer += dt  
         if game.stage_timer >= 60.0:  
             game.stage_timer = 60.0
@@ -215,13 +218,13 @@ def update_logic(game, dt):
         if game.player.hp <= 0:
             game.state = "GAME_OVER"
             
-        # 2. Ruch Gracza i Aktualizacja Timerów
         if game.player.hurt_timer > 0:
             game.player.hurt_timer -= dt
             
         if game.player.shoot_timer > 0:
             game.player.shoot_timer -= dt
 
+        # ruch gracza
         keys = pygame.key.get_pressed()
         dir_x, dir_y = 0, 0
 
@@ -242,14 +245,14 @@ def update_logic(game, dt):
         if game.player.y < game.player.radius: game.player.y = game.player.radius
         if game.player.y > WORLD_HEIGHT - game.player.radius: game.player.y = WORLD_HEIGHT - game.player.radius
 
-        # 3. Spawnowanie Wrogów
+        # spawn wrogow
         current_max_enemies = 10 + (game.stage - 1) * 5
         enemies_to_spawn = 0
         
         if not game.wave1_spawned:
             enemies_to_spawn = current_max_enemies // 2
             game.wave1_spawned = True
-        elif game.stage_timer >= 10.0 and not game.wave2_spawned:
+        elif game.stage_timer >= 15.0 and not game.wave2_spawned:
             enemies_to_spawn = current_max_enemies - len(game.enemies)
             game.wave2_spawned = True
         elif game.wave2_spawned and len(game.enemies) < current_max_enemies:
@@ -304,7 +307,7 @@ def update_logic(game, dt):
         for enemy in game.enemies:
             enemy.dist = math.hypot(game.player.x - enemy.x, game.player.y - enemy.y)
 
-        # 4. Atak Gracza
+        # atak
         game.player.attack_cooldown -= dt
 
         enemies_in_range = [e for e in game.enemies if e.dist <= game.player.range]
@@ -318,7 +321,7 @@ def update_logic(game, dt):
                 game.player.attack_cooldown = 1.0 / game.player.attack_speed
                 game.player.shoot_timer = 0.1 
 
-        # 5. Ruch Wrogów i Kolizje 
+        # ruch wrogow
         alive_enemies = []
         for enemy in game.enemies:
             if enemy.hp <= 0:
@@ -355,7 +358,7 @@ def update_logic(game, dt):
 
         game.enemies = alive_enemies
 
-        # 6. Odpychanie się Wrogów
+        # kolizje wrogow
         for i in range(len(game.enemies)):
             for j in range(i + 1, len(game.enemies)):
                 e1 = game.enemies[i]
@@ -373,7 +376,7 @@ def update_logic(game, dt):
                     e2.x -= nx * (overlap / 2)
                     e2.y -= ny * (overlap / 2)
 
-        # 7. Mechanika Przedmiotów na Mapie 
+        # spawn itemow
         map_money = [i for i in game.items if i.type == "MONEY_DROP"]
         map_gold = [i for i in game.items if i.type == "GOLDEN_ORB"]
         map_heals = [i for i in game.items if i.type == "HEAL_DROP" and not i.from_enemy]

@@ -1,9 +1,10 @@
-Stage: 1
-Money: 68
-Max_HP: 5.0
-HP: 5.0
+Stage: 4
+Money: 44
+Max_HP: 10.5
+HP: 10.5
 Speed: 270
-Damage: 1.0
-Attack_Speed: 1.0
+Damage: 1.5
+Attack_Speed: 1.5999999999999999
 Range: 150
 Weapons: 1
+Enemy_Speed_Bonus: 0.0

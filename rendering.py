@@ -1,19 +1,19 @@
 
 """
-Moduł rendering.py
-Odpowiada w całości za renderowanie warstwy graficznej, rysowanie obiektów,
-zarządzanie kamerą, a także renderowanie interfejsu sklepów, menu oraz komunikatów.
+rendering.py
+Moduł zawierajacy funkcję odpowiadającą za renderowanie świata gry co każdą klatke
 """
 
+import math
 import pygame
 import os
 from settings import *
 
 def draw_screen(game):
     """
-    Czyści ekran i renderuje całą szatę graficzną dopasowaną do bieżącego stanu gry.
+    Czyści ekran i renderuje grafike dopasowaną do bieżącego stanu gry
 
-    :param game: Instancja głównej aplikacji przechowująca stan gry.
+    :param game: obiekt gry
     """
     game.screen.fill(BLACK)
 
@@ -33,11 +33,10 @@ def draw_screen(game):
         else:
             pygame.draw.rect(game.screen, DARK_GRAY, game.btn_load_rect, 3) 
             
-        load_text_surf = game.font_ui.render("LOAD GAME", True, load_text_color)
+        load_text_surf = game.font_ui.render("LOAD GAME", True, BLACK)
         game.screen.blit(load_text_surf, load_text_surf.get_rect(center=game.btn_load_rect.center))
         
     else:
-        # --- OBLICZANIE KAMERY ---
         camera_x = int(game.player.x - (game.width / 2))
         camera_y = int(game.player.y - (game.height / 2))
 
@@ -55,7 +54,7 @@ def draw_screen(game):
             if camera_y < 0: camera_y = 0
             if camera_y > camera_max_y: camera_y = camera_max_y
 
-        # Rysowanie siatki mapy
+        # siatka w tle
         for x in range(0, WORLD_WIDTH + 1, 100):
             pygame.draw.line(game.screen, DARK_GRAY, (x - camera_x, 0 - camera_y), (x - camera_x, WORLD_HEIGHT - camera_y))
         for y in range(0, WORLD_HEIGHT + 1, 100):
@@ -63,7 +62,7 @@ def draw_screen(game):
 
         pygame.draw.rect(game.screen, DARK_GRAY, (0 - camera_x, 0 - camera_y, WORLD_WIDTH, WORLD_HEIGHT), 5)
 
-        # Rysowanie przedmiotów
+        # render itemow
         for item in game.items:
             draw_item_x = int(item.x - camera_x)
             draw_item_y = int(item.y - camera_y)
@@ -76,7 +75,7 @@ def draw_screen(game):
             else:
                 pygame.draw.circle(game.screen, item.color, (draw_item_x, draw_item_y), item.radius)
 
-        # Rysowanie laserów (ataku)
+        # render linii ataku
         if game.state == "PLAYING" and game.current_targets:
             draw_player_x = int(game.player.x - camera_x)
             draw_player_y = int(game.player.y - camera_y)
@@ -93,7 +92,7 @@ def draw_screen(game):
                 draw_target_y = int(target.y - camera_y)
                 pygame.draw.line(game.screen, line_color, (draw_player_x, draw_player_y), (draw_target_x, draw_target_y), line_width)
 
-        # Rysowanie wrogów i ich pasków HP
+        # render wrogow i hp
         for enemy in game.enemies:
             draw_x = int(enemy.x - camera_x)
             draw_y = int(enemy.y - camera_y)
@@ -113,7 +112,7 @@ def draw_screen(game):
             enemy_hp_text = game.font_small.render(f"{enemy.hp:.1f}", True, WHITE)
             game.screen.blit(enemy_hp_text, enemy_hp_text.get_rect(center=(draw_x, draw_y - enemy.radius - 20)))
 
-        # Rysowanie gracza i jego okręgu zasięgu
+        # render playera
         if game.state != "GAME_OVER":
             draw_player_x = int(game.player.x - camera_x)
             draw_player_y = int(game.player.y - camera_y)
@@ -125,7 +124,7 @@ def draw_screen(game):
             current_player_color = COLOR_HURT if game.player.hurt_timer > 0 else WHITE
             pygame.draw.circle(game.screen, current_player_color, (draw_player_x, draw_player_y), game.player.radius)
 
-        # --- INTERFEJS UŻYTKOWNIKA (HUD) ---
+        # render hudu
         bar_x, bar_y, bar_width, bar_height = 20, 20, 200, 16
         player_hp_ratio = max(0, game.player.hp / game.player.max_hp)
         pygame.draw.rect(game.screen, RED, (bar_x, bar_y, bar_width, bar_height))
@@ -151,8 +150,7 @@ def draw_screen(game):
             text_surface = game.font_ui.render(element["text"], True, element["color"])
             game.screen.blit(text_surface, (20, 60 + (i * 30))) 
 
-        stage_str = f"STAGE {game.stage}"
-        stage_text = game.font_stage.render(stage_str, True, RED)
+        stage_text = game.font_stage.render(f"STAGE {game.stage}", True, RED)
         game.screen.blit(stage_text, (game.width - stage_text.get_width() - 20, 20))
 
         seconds = int(game.stage_timer)
@@ -164,7 +162,13 @@ def draw_screen(game):
         money_text = game.font_large.render(f"{game.player.money} $", True, GREEN)
         game.screen.blit(money_text, (game.width - money_text.get_width() - 20, 110))
 
-        # --- NAKŁADKI STANÓW GRY ---
+        # w zaleznosci od stanu gry render odpowiednich elementow gui
+        if game.state == "PLAYING" and 10.0 <= game.stage_timer < 15.0 and not game.wave2_spawned:
+            countdown_seconds = math.ceil(15.0 - game.stage_timer)
+            wave_text_str = f"NEXT WAVE IN {countdown_seconds} s"
+            wave_text_surf = game.font_large.render(wave_text_str, True, WHITE)
+            game.screen.blit(wave_text_surf, wave_text_surf.get_rect(midtop=(game.width / 2, 20)))
+
         if game.state == "SHOP":
             overlay = pygame.Surface((game.width, game.height), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 240)) 
@@ -180,7 +184,7 @@ def draw_screen(game):
             money_shop_text = game.font_large.render(f"{game.player.money} $", True, shop_money_color)
             game.screen.blit(money_shop_text, money_shop_text.get_rect(center=(game.width / 2, int(game.height / 2) - 170)))
 
-            base_prices = [50, 60, 80, 80, 100, 150]
+            base_prices = [35, 45, 65, 65, 85, 135] # hp speed damage atk range weapon
             prices = [base_price + (game.stage - 1) * 10 for base_price in base_prices]
             
             shop_labels = [
@@ -217,13 +221,6 @@ def draw_screen(game):
                 
                 text_surf = game.font_ui.render(label, True, text_color)
                 game.screen.blit(text_surf, text_surf.get_rect(midleft=(rect.left + 15, rect.centery)))
-
-                if not can_buy:
-                    price_color = DARK_GRAY
-                elif can_afford:
-                    price_color = GREEN
-                else:
-                    price_color = RED
                     
                 price_surf = game.font_ui.render(price_str, True, price_color)
                 game.screen.blit(price_surf, price_surf.get_rect(midright=(rect.right - 15, rect.centery)))
@@ -279,7 +276,6 @@ def draw_screen(game):
             
             can_load = os.path.exists("save.txt") and os.path.getsize("save.txt") > 0
             load_color = GREEN if can_load else DARK_GRAY
-            load_text_color = BLACK
             
             pygame.draw.rect(game.screen, load_color, game.btn_go_load_rect)
             if can_load:
@@ -287,7 +283,7 @@ def draw_screen(game):
             else:
                 pygame.draw.rect(game.screen, DARK_GRAY, game.btn_go_load_rect, 3) 
                 
-            load_text_surf = game.font_ui.render("LOAD GAME", True, load_text_color)
+            load_text_surf = game.font_ui.render("LOAD GAME", True, BLACK)
             game.screen.blit(load_text_surf, load_text_surf.get_rect(center=game.btn_go_load_rect.center))
             
         elif game.state == "PAUSED":

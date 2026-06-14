@@ -1,7 +1,3 @@
-"""
-Moduł main.py
-Główny punkt wejściowy do gry. Odpowiada za uruchomienie instancji klasy GameApp.
-"""
 
 from game import GameApp
 

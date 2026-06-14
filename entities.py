@@ -1,19 +1,19 @@
+
 """
-Moduł entities.py
-Zawiera definicje klas reprezentujących obiekty w grze: Player, Enemy oraz Item.
+entities.py
+Moduł zawierajacy klasy gracza, przeciwnika i przedmiotu
 """
 
 class Player:
     """
-    Klasa reprezentująca postać gracza.
-    Przechowuje informacje o pozycji, statystykach, zdrowiu i zasobach.
+    Reprezentacja Gracza
     """
     def __init__(self, x, y):
         """
-        Inicjalizuje obiekt gracza na podanych współrzędnych ze statystykami bazowymi.
+        Konstruktor z domyślnym ustawianiem pozycji gracza
 
-        :param x: Początkowa współrzędna X (float lub int).
-        :param y: Początkowa współrzędna Y (float lub int).
+        :param x: koord X
+        :param y: koord Y
         """
         self.x = x
         self.y = y
@@ -33,19 +33,19 @@ class Player:
 
 class Enemy:
     """
-    Klasa reprezentująca przeciwnika w grze.
+    Reprezentacja Przeciwnika
     """
     def __init__(self, x, y, hp=2.0, speed=200, damage=0.5, attack_speed=0.75, radius=15):
         """
-        Inicjalizuje obiekt przeciwnika.
+        Konstruktor z domyślnym ustawianiem pozycji, hp, obrazen, szybkosci, szybkosci ataku i wielkosci przeciwnika
 
-        :param x: Początkowa współrzędna X (float lub int).
-        :param y: Początkowa współrzędna Y (float lub int).
-        :param hp: Maksymalne i początkowe zdrowie przeciwnika (float).
-        :param speed: Prędkość poruszania się przeciwnika (float lub int).
-        :param damage: Obrażenia zadawane przez przeciwnika (float).
-        :param attack_speed: Szybkość ataku przeciwnika (float).
-        :param radius: Promień (wielkość) przeciwnika (int).
+        :param x: koord X
+        :param y: koord Y
+        :param hp: maks i poczatkowe zdrowie
+        :param speed: szybkosc poruszania
+        :param damage: obrazenia
+        :param attack_speed: szybkosc ataku
+        :param radius: promien koła przeciwnika
         """
         self.x = x
         self.y = y
@@ -61,17 +61,17 @@ class Enemy:
 
 class Item:
     """
-    Klasa reprezentująca przedmiot leżący na mapie (np. leczenie, pieniądze).
+    Reprezentacja Przedmiotu
     """
     def __init__(self, x, y, item_type, color, from_enemy=False):
         """
-        Inicjalizuje obiekt przedmiotu.
+        Konstruktor klasy przedmiotu ze stalą jego wielkoscią
 
-        :param x: Współrzędna X przedmiotu na mapie (float lub int).
-        :param y: Współrzędna Y przedmiotu na mapie (float lub int).
-        :param item_type: Typ przedmiotu, np. "HEAL_DROP", "MONEY_DROP" (str).
-        :param color: Kolor przedmiotu do renderowania (tuple RGB).
-        :param from_enemy: Flaga oznaczająca, czy przedmiot wypadł z pokonanego wroga (bool).
+        :param x: koord X
+        :param y: koord Y
+        :param item_type: typ przedmiotu 
+        :param color: kolor
+        :param from_enemy: flaga czy przedmiot jest od wroga
         """
         self.x = x
         self.y = y
